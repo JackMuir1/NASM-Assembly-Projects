@@ -1,0 +1,107 @@
+;nasm 2.13.02
+;Name: Jack Muir, ID: 900783742
+;Given a first and last name, repeat the name in a sentance with a personal message
+;input format example
+;Jack
+;Muir
+
+section .data ;constants
+
+    hello:     db 'Hello '    ; 'Hello ' starting string
+    helloLen:  equ $-hello    ; Length of the 'Hello ' string
+    
+    emptyspace: db ' '         ; a single space to be placed bewteen variables
+    spaceLen: equ $-emptyspace ; length of single space
+    
+    nice: db '. Nice to meet you!', 10 ;Nice to meet you string, with a linefeed to skip to next line
+    niceLen: equ $-nice                ;length of the nice to meet you string
+    
+    complement: db ' is a wonderful last name!' ;String complementing the last name
+    complementLen: equ $-complement             ;length of the complement string
+    
+section .bss ;variables
+
+    firstName resb 10   ;reserve 10 bytes for the first name variable
+    lastName resb 10    ;reserve 10 bytes for the last name variable
+    space resb 2        ;reserve 2 bytes for the newline character to be stored between variables
+    
+section .text ;Code
+
+	global _start ;start of instruction
+
+_start: ;instruction
+
+    ;read firstName
+	mov eax,3            ; The system call for read
+	mov ebx,0            ; File descriptor 0 - standard for input
+	mov ecx, firstName   ; Put the offset of the input into firstname
+	mov edx, 10          ; Store 10 bytes of firstname
+    int 80h              ; call kernel
+
+    ;read newline character
+    mov eax,3            ; The system call for read
+	mov ebx,0            ; File descriptor 0 - standard for input
+	mov ecx, space       ; Put the newline character between names into space variable
+	mov edx, 2           ; Store two bytes of characters from the newline
+    int 0x80             ; call kernel
+    
+    ;read lastName
+    mov eax,3            ; The system call for read
+	mov ebx,0            ; File descriptor 0 - standard for input
+	mov ecx,lastName     ; Put the offset of input into lastName
+	mov edx, 10          ; Store 10 bytes of character from lastName
+    int 0x80             ; call kernel
+
+    ;write 'Hello'
+    mov eax,4            ; The system call for write (sys_write)
+	mov ebx,1            ; File descriptor 1 - standard output
+	mov ecx,hello        ; Put the offset of hello in ecx
+	mov edx, helloLen    ; use the helloLen constant as the number to move edx
+	int 80h              ; call kernel
+
+    ;write firstName
+	mov eax,4            ; The system call for write (sys_write)
+	mov ebx,1            ; File descriptor 1 - standard output
+	mov ecx,firstName    ; Put the offset of firstName in ecx
+	mov edx, 10          ; Move 10 bytes for the length of firstName
+    int 80h              ; call kernel
+    
+    ;write one space ' '
+    mov eax,4            ; The system call for write (sys_write)
+	mov ebx,1            ; File descriptor 1 - standard output
+	mov ecx, emptyspace  ; Put the offset of one empty space in ecx
+	mov edx, spaceLen    ; spaceLen is a constant, so we don't need to enter a number
+    int 80h 
+    
+    ;write lastName
+    mov eax,4            ; The system call for write (sys_write)
+	mov ebx,1            ; File descriptor 1 - standard output
+	mov ecx,lastName     ; Put the offset of lastName in ecx
+	mov edx, 10          ; Move 10 bytes for the length of lastName
+    int 80h              ; Call the kernel
+    
+    ;write '. Nice to meet you!'
+    mov eax,4            ; The system call for write (sys_write)
+	mov ebx,1            ; File descriptor 1 - standard output
+	mov ecx,nice         ; Put the offset of the nice string in ecx
+	mov edx, niceLen     ; niceLen is a constant, so we don't need to enter a number
+    int 80h              ; Call the kernel
+    
+    ;write lastName
+    mov eax,4            ; The system call for write (sys_write)
+	mov ebx,1            ; File descriptor 1 - standard output
+	mov ecx,lastName     ; Put the offset of lastName in ecx
+	mov edx, 10          ; Move 10 bytes for the length of lastName
+    int 80h              ; Call the kernel
+    
+    ;write ' is a wonderful last name!'
+    mov eax,4                  ; The system call for write (sys_write)
+	mov ebx,1                  ; File descriptor 1 - standard output
+	mov ecx,complement         ; Put the offset of complement string in ecx
+	mov edx, complementLen     ; helloLen is a constant, so we don't need to enter a number
+    int 80h                    ; Call the kernel
+    
+    ;System Exit
+	mov eax,1            ; The system call for exit (sys_exit)
+	mov ebx,0            ; Exit with return code of 0 (no error)
+	int 80h;

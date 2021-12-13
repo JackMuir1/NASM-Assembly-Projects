@@ -1,0 +1,69 @@
+;Name: Jack Muir
+;ID 900783874
+;Given a one digit number, print every even number from 0- the specified number using a loop
+;input format example
+;9
+section .data
+
+    space db ' ' ;Stores the spaces between numbers
+    
+section .bss
+
+    num resb 1           ;Holds the incremented number
+    displayNum resb 1    ;Holds the number to be displayed
+    total resb 1         ;Holds the number that is trying to be reached
+    
+section .text
+    global _start
+
+;beginning instruction to run first
+_start:
+
+    mov eax,3         ;system call for read   
+    mov ebx,0         ;file descriptor 0- standard for input
+    mov ecx,total     ;place input into total variable
+    mov edx,1         ;take one byte of input
+    int 80h           ;call kernel
+    
+    sub [total], byte '0' ;Convert input variable to number from ascii
+    
+    mov [num], byte 0 ;Initialize the incremented number at 0
+    
+;instruction to be repeated
+_loop:
+
+    
+    mov al, [num] ;move num to register
+    TEST    AL, 01H ;Check if al is odd
+    JNZ      _odd ;if it is odd, go to odd instruction to skip display
+
+    ;IF EVEN
+    add al, '0' ;convert al to ascii
+    mov [displayNum], al     ;Moves ASCII value to displayNum
+    
+    
+    
+    mov eax,4           ;The system call for write (sys_write)  
+    mov ebx,1           ;File descriptor 1 - standard output
+    mov ecx,displayNum  ; Put the offset of displayNum in ecx
+    mov edx,1           ;move 1 byte
+    int 80h             ;call kernel
+    
+    mov eax,4           ;The system call for write (sys_write)
+    mov ebx,1           ;File descriptor 1 - standard output
+    mov ecx,space       ;Put the offset of space in ecx
+    mov edx,1           ;move 1 byte
+    int 80h             ;call kernel
+    
+;IF ODD
+_odd:
+    mov bl, byte [total] ;place total into register for comparison
+    inc byte [num]       ;increase the value of the incrementable number
+    cmp [num], byte bl   ;Compare true value with the total in bl register
+    jle _loop            ;Jump back if num value is less than or equal to the input number 
+    
+;END
+_end:
+    mov eax,1            ; The system call for exit (sys_exit)
+    mov ebx,0            ; Exit with return code of 0 (no error)
+    int 80h;             ;Call kernel
